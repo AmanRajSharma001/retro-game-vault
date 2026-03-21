@@ -2,20 +2,20 @@
 
 ## 📌 Project Overview
 
-Retro Game Vault is a web application that allows users to search and explore classic and modern video games. Users can filter games by platform, view ratings, save favourites, add to wishlist and compare games side-by-side.
+Retro Game Vault is a web application for searching and discovering classic and modern video games. It allows users to filter games by platforms, view ratings, and save their favorite games, wishlist games, and compare games.The purpose of this project is to create a simple and interactive interface for discovering video games.
 
 This project aims to provide a clean and interactive interface for discovering video games using real-time data.
 
 ---
 
-## 🚀 Features
+## 🚀 Project Features
 
-* 🔍 Search games with debounce functionality
-* 🎮 Filter games by platform (PC, PlayStation, Xbox, etc.)
-* ⭐ View ratings and game details
-* ❤️ Add games to Favorites (stored in browser/local storage)
-* 📊 Compare two games side-by-side
-* 🧾 Wishlist system (saved locally)
+* 🔍 Search by Debounced Filter.
+* 🎮 Filter by Platforms, PC, PlayStation, Xbox, etc. 
+* ⭐ View Games and Ratings.
+* ❤️ Favorites Games (Local Storage).
+* 📊 Compare Two Games.
+* 🧾 Readme Wishlist.
 
 ---
 
@@ -25,21 +25,23 @@ This project uses the **RAWG Video Games Database API**:
 
 👉 https://rawg.io/apidocs
 
-The API provides:
+---
 
-* Game search results
-* Game details (ratings, release date, genres)
-* Platform information
-* Images and metadata
+## 🔎 API Resources:
+
+* Game search results.
+* Game details, ratings, release date, genres, etc.
+* Platform details.
+* Images and metadata.
 
 ---
 
 ## 🛠️ Technologies Used
 
-* HTML
-* CSS
-* JavaScript
-* (Future Updates) React.js
+* HTML.
+* CSS.
+* JavaScript.
+* (Future Updates)React.js.
 
 ---
 
@@ -49,14 +51,12 @@ Soon!!!
 
 ---
 
-## 📈 Future Improvements
+## 📈 Project Ideas for Future Development
 
 Soon!!!
 
 ---
 
-## 🎯 Project Goal
+## 🎯 Project Objective
 
-To build an interactive and user-friendly game discovery platform while learning API integration, UI design, and state management.
-
----
+Create a simple and interactive interface for discovering games, and at the same time, learn the ins and outs of interacting with APIs, UI/UX, and state management.
