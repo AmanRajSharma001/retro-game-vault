@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+  background: black;
+  color: #00ffcc;
+  font-family: 'Pixelify Sans', sans-serif;
+}
+
+#intro {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+#title {
+  font-size: 3.5rem;
+}
+
+#press {
+  margin-top: 20px;
+  animation: blink 1s infinite;
+  font-size:1.5rem;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
