@@ -14,17 +14,22 @@
 </head>
 
 <body>
-
+  <video id="bg-video" autoplay muted loop style="position: fixed;width: 100%;height: 100%;object-fit: cover;z-index: -1;">
+    <source src="video/bgvideo.mp4" type="video/mp4">
+    Your browser does not support video.
+  </video>
   <div id="intro">
     <h1 id="title"></h1>
     <p id="press">PRESS ENTER</p>
     <audio id="background"></audio>
     <audio id = 'enter' autoplay muted>
-        <source src = 'audio/Enter.mp3' type = 'audio/mpeg'>
+      <source src = 'audio/Enter.mp3' type = 'audio/mpeg'>
     </audio>
   </div>
-
-
+  <div class="opening-animation" id="circle"></div>
+  <div id="main-content">
+    <h1>hello</h1>
+  </div>
   <script src="index.js"></script>
 
 </body>
