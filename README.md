@@ -47,7 +47,13 @@ This project uses the **RAWG Video Games Database API**:
 
 ## ⚙️ Setup Ideation
 
-Soon!!!
+1. Clone the repository:  git clone https://github.com/your-username/retro-game-vault.git
+2. Navigate to the project folder:  cd retro-game-vault
+3. npm install express dotenv cors
+4. add .gitignore and these files inside {.env,node_modules,package-lock.json,package.json}
+5. generate API key from https://rawg.io/apidocs
+6. create a .env file, a variable named: RETRO_KEY and store your API Key inside.
+7. Open index.html in your browser
 
 ---
 
