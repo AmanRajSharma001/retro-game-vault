@@ -53,7 +53,9 @@ This project uses the **RAWG Video Games Database API**:
 4. add .gitignore and these files inside {.env,node_modules,package-lock.json,package.json}
 5. generate API key from https://rawg.io/apidocs
 6. create a .env file, a variable named: RETRO_KEY and store your API Key inside.
-7. Open index.html in your browser
+7. run this command on terminal: brew install node
+8. run this command on terminal: node api.js
+9. Open index.html in your browser
 
 ---
 
