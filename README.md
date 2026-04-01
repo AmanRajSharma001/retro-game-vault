@@ -1,5 +1,8 @@
 # 🎮 Retro Game Vault
 
+## ⚠️ Note
+Do complete the **⚙️ Setup Ideation** before running index.html
+
 ## 📌 Project Overview
 
 Retro Game Vault is a web application for searching and discovering classic and modern video games. It allows users to filter games by platforms, view ratings, and save their favorite games, wishlist games, and compare games.The purpose of this project is to create a simple and interactive interface for discovering video games.
