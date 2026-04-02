@@ -2,6 +2,7 @@
 
 ## ⚠️ Note
 Do complete the **⚙️ Setup Ideation** before running index.html
+DO run the index.html on brave or chrome
 
 ## 📌 Project Overview
 
