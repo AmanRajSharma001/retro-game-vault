@@ -1,14 +1,10 @@
 const songs = ["audio/audio1.mp3","audio/audio2.mp3","audio/audio3.mp3","audio/audio4.mp3"];
-
 let currentSong = 0;
-
 const audio = document.getElementById("background");
 
 function Play(index) {
   audio.src = songs[index];
-  audio.play().catch(() => {
-    console.log("Autoplay blocked");
-  });
+  audio.play().catch(() => console.log("Autoplay blocked"));
 }
 
 audio.addEventListener("ended", () => {
@@ -17,29 +13,40 @@ audio.addEventListener("ended", () => {
 });
 
 window.addEventListener("load", () => {
-  const shouldPlay = localStorage.getItem("playMusic");
-
-  if (shouldPlay === "true") {
+  if (localStorage.getItem("playMusic") === "true") {
     Play(currentSong);
     localStorage.removeItem("playMusic");
   }
 });
 
-
 let currentPage = 1;
-let totalgames = [];
 let search = "";
-const games = document.getElementById("games");
-let input = document.getElementById("search");
-let timeout;
 let orderBy = "-added";
-let platform = ""; 
+let platform = "";
+let totalgames = [];
+
+const games = document.getElementById("games");
+const input = document.getElementById("search");
+const orderSelect = document.getElementById("order-by");
+const platformSelect = document.getElementById("platforms");
+
+let timeout;
+
+
+async function getGames(extra = "") {
+  const res = await fetch(
+    `http://localhost:3000/games?page=${currentPage}&search=${search}&platforms=${platform}${extra}`
+  );
+  const data = await res.json();
+  return data.results;
+}
 
 function applyFilters(data) {
   return data.filter(game => {
-
     if (game.rating === 0) return false;
     if (game.ratings_count < 20) return false;
+
+    if (search && !game.name.toLowerCase().includes(search)) return false;
 
     if (platform && !game.platforms?.some(p => p.platform.id == platform)) {
       return false;
@@ -49,71 +56,71 @@ function applyFilters(data) {
   });
 }
 
-async function getGames() {
-  console.log(`URL: http://localhost:3000/games?page=${currentPage}&search=${search}&ordering=${orderBy}&platforms=${platform}`);
-  const res = await fetch(
-    `http://localhost:3000/games?page=${currentPage}&search=${search}&ordering=${orderBy}&platforms=${platform}`
-  );
-  const data = await res.json();
-  return data.results;
-}
-
 function applySorting(data) {
+  let sorted = [...data];
 
   if (orderBy === "-rating") {
-    return data.sort((a, b) => b.rating - a.rating);
+    return sorted.sort((a, b) => b.rating - a.rating);
   }
 
   if (orderBy === "-added") {
-    return data.sort((a, b) => b.added - a.added);
+    return sorted.sort((a, b) => b.added - a.added);
   }
 
   if (orderBy === "released") {
-    return data.sort((a, b) => new Date(b.released) - new Date(a.released));
+    return sorted.sort((a, b) => new Date(b.released) - new Date(a.released));
   }
 
   if (orderBy === "name") {
-    return data.sort((a, b) => a.name.localeCompare(b.name));
+    return sorted.sort((a, b) => {
+      let A = a.name.toLowerCase();
+      let B = b.name.toLowerCase();
+      if (A < B) return -1;
+      if (A > B) return 1;
+      return 0;
+    });
   }
 
-  return data;
+  return sorted;
 }
 
-async function getGamesWithDates(from, to) {
-  const fromDate = from.toISOString().split("T")[0];
-  const toDate = to.toISOString().split("T")[0];
+async function loadAndRender(reset = true, extra = "") {
 
-  const res = await fetch(
-    `http://localhost:3000/games?page=${currentPage}&dates=${fromDate},${toDate}&ordering=${orderBy}&platforms=${platform}`
-  );
+  if (reset) {
+    games.innerHTML = "<h2>Loading...</h2>";
+  }
 
-  const data = await res.json();
-  return data.results;
+  const data = await getGames(extra);
+
+  let filtered = applyFilters(data);
+  let sorted = applySorting(filtered);
+
+  if (reset) {
+    totalgames = sorted;
+    resetGames(totalgames);
+  } else {
+    totalgames.push(...sorted);
+    appendGames(sorted);
+  }
 }
 
-async function getGamesByYear(year) {
-  const res = await fetch(
-    `http://localhost:3000/games?page=${currentPage}&dates=${year}-01-01,${year}-12-31&ordering=-rating&platforms=${platform}`
-  );
-
-  const data = await res.json();
-  return data.results;
-}
-
-function resetGames(gameList){
+function resetGames(list) {
   games.innerHTML = "";
-  if (gameList.length === 0){
+
+  if (list.length === 0) {
     games.innerHTML = "<h1>No Games Found 💀</h1>";
     return;
   }
-  gameList.forEach((values) => createCard(values));
+
+  list.forEach(createCard);
 }
 
-function appendGames(gameList){
-  gameList.forEach((values) => createCard(values));
+function appendGames(list) {
+  list.forEach(createCard);
 }
 
-function createCard(values){
+
+function createCard(values) {
   let card = document.createElement("div");
   card.classList.add("game-card");
 
@@ -131,196 +138,112 @@ function createCard(values){
   meta.innerText = `🔥 ${values.ratings_count} ratings`;
 
   let platforms = document.createElement("p");
-  platforms.innerText = values.platforms
-    ?.map(p => p.platform.name)
-    .slice(0, 3)
-    .join(", ");
+  platforms.innerText =
+    values.platforms?.map(p => p.platform.name).slice(0, 3).join(", ") || "N/A";
 
   card.append(img, title, rating, meta, platforms);
   games.appendChild(card);
 }
 
-async function init(){
-  games.innerHTML = "<h2>Loading...</h2>";
+loadAndRender();
 
-  const data = await getGames();
-
-  const filtered = applyFilters(data);
-  const sorted = applySorting(filtered);
-
-  totalgames = sorted;
-  resetGames(totalgames);
-}
-init();
-
-const orderSelect = document.getElementById("order-by");
-const platformSelect = document.getElementById("platforms");
-
-orderSelect.addEventListener("change", async (e) => {
-  orderBy = e.target.value;
-  currentPage = 1;
-
-  games.innerHTML = "<h2>Loading...</h2>";
-
-  const data = await getGames();
-
-  const filtered = applyFilters(data);
-  const sorted = applySorting(filtered);
-
-  totalgames = sorted;
-  resetGames(totalgames);
-});
-
-platformSelect.addEventListener("change", async (e) => {
-  platform = e.target.value;
-  currentPage = 1;
-
-  games.innerHTML = "<h2>Loading...</h2>";
-
-  const data = await getGames();
-
-  const filtered = applyFilters(data);
-  const sorted = applySorting(filtered);
-
-  totalgames = sorted;
-  resetGames(totalgames);
-});
-
-async function loadMore(){
-  currentPage++;
-
-  const data = await getGames();
-
-  const filtered = applyFilters(data);
-  const sorted = applySorting(filtered);
-
-  totalgames.push(...sorted);
-  appendGames(sorted);
-}
-document.getElementById("loadMore").addEventListener("click", loadMore);
-
-
-input.addEventListener("input",(e)=>{
+input.addEventListener("input", (e) => {
   clearTimeout(timeout);
 
-  timeout = setTimeout(async ()=>{
-    search = e.target.value || "";
+  timeout = setTimeout(() => {
+    search = e.target.value.toLowerCase();
     currentPage = 1;
-
-    const data = await getGames();
-
-    const filtered = applyFilters(data);
-    const sorted = applySorting(filtered);
-
-    totalgames = sorted;
-    resetGames(totalgames);
-
-  },500);
+    loadAndRender(true);
+  }, 400);
 });
-  const menuBtn = document.getElementById("menu-toggle");
-  const sidebar = document.getElementById("sidebar");
-  const overlay = document.getElementById("overlay");
 
-  menuBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    sidebar.classList.toggle("active");
-    overlay.classList.toggle("active");
-  });
-
-  overlay.addEventListener("click", () => {
-    sidebar.classList.remove("active");
-    overlay.classList.remove("active");
-  });
-
-
-document.getElementById("last30").addEventListener("click", async (e) => {
-  e.preventDefault();
-
+orderSelect.addEventListener("change", (e) => {
+  orderBy = e.target.value;
   currentPage = 1;
-  orderBy = "-released";
+  loadAndRender(true);
+});
+
+platformSelect.addEventListener("change", (e) => {
+  platform = e.target.value;
+  currentPage = 1;
+  loadAndRender(true);
+});
+
+document.getElementById("loadMore").addEventListener("click", () => {
+  currentPage++;
+  loadAndRender(false);
+});
+
+const menuBtn = document.getElementById("menu-toggle");
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
+
+menuBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  sidebar.classList.toggle("active");
+  overlay.classList.toggle("active");
+});
+
+overlay.addEventListener("click", () => {
+  sidebar.classList.remove("active");
+  overlay.classList.remove("active");
+});
+
+function formatDate(d) {
+  return d.toISOString().split("T")[0];
+}
+
+document.getElementById("last30").onclick = (e) => {
+  e.preventDefault();
+  currentPage = 1;
 
   const today = new Date();
   const past = new Date();
   past.setDate(today.getDate() - 30);
 
-  const data = await getGamesWithDates(past, today);
-  const filtered = applyFilters(data);
+  loadAndRender(true, `&dates=${formatDate(past)},${formatDate(today)}`);
+};
 
-  totalgames = filtered;
-  resetGames(totalgames);
-});
-
-document.getElementById("thisWeek").addEventListener("click", async (e) => {
+document.getElementById("thisWeek").onclick = (e) => {
   e.preventDefault();
-
   currentPage = 1;
-  orderBy = "-released";
 
   const today = new Date();
   const past = new Date();
   past.setDate(today.getDate() - 7);
 
-  const data = await getGamesWithDates(past, today);
-  const filtered = applyFilters(data);
+  loadAndRender(true, `&dates=${formatDate(past)},${formatDate(today)}`);
+};
 
-  totalgames = filtered;
-  resetGames(totalgames);
-});
-
-document.getElementById("nextWeek").addEventListener("click", async (e) => {
+document.getElementById("nextWeek").onclick = (e) => {
   e.preventDefault();
-
   currentPage = 1;
-  orderBy = "-released";
 
   const today = new Date();
   const future = new Date();
   future.setDate(today.getDate() + 7);
 
-  const data = await getGamesWithDates(today, future);
-  const filtered = applyFilters(data);
+  loadAndRender(true, `&dates=${formatDate(today)},${formatDate(future)}`);
+};
 
-  totalgames = filtered;
-  resetGames(totalgames);
-});
-
-document.getElementById("bestYear").addEventListener("click", async (e) => {
+document.getElementById("bestYear").onclick = (e) => {
   e.preventDefault();
-
   currentPage = 1;
-  orderBy = "-rating";
 
   const year = new Date().getFullYear();
+  loadAndRender(true, `&dates=${year}-01-01,${year}-12-31`);
+};
 
-  const data = await getGamesByYear(year);
-  const filtered = applyFilters(data);
-
-  totalgames = filtered;
-  resetGames(totalgames);
-});
-
-document.getElementById("popular2025").addEventListener("click", async (e) => {
+document.getElementById("popular2025").onclick = (e) => {
   e.preventDefault();
+  currentPage = 1;
 
+  loadAndRender(true, `&dates=2025-01-01,2025-12-31`);
+};
+
+document.getElementById("topAll").onclick = (e) => {
+  e.preventDefault();
   currentPage = 1;
   orderBy = "-rating";
-
-  const data = await getGamesByYear(2025);
-  const filtered = applyFilters(data);
-
-  totalgames = filtered;
-  resetGames(totalgames);
-});
-
-document.getElementById("topAll").addEventListener("click", async (e) => {
-  e.preventDefault();
-
-  currentPage = 1;
-  orderBy = "-rating";
-
-  const data = await getGames();
-  const filtered = applyFilters(data);
-
-  totalgames = filtered;
-  resetGames(totalgames);
-});
+  loadAndRender(true);
+};
