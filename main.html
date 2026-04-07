@@ -18,7 +18,9 @@
     <div id="header">
         <div class="left">
             <a href="index.html" target = "_self">PixelArcade</a>
-            <!-- <a href=""><i class="fa-duotone fa-solid fa-bars"></i></a> -->
+            <a href="#" id="menu-toggle">
+            <i class="fa-solid fa-bars"></i>
+            </a>
             <a href="">Home</a>
             <a href="">Reviews</a>
         </div>
@@ -26,16 +28,17 @@
             <input id="search" type="text" placeholder="🔎 Search for games...">
         </div>
     </div>
+    <div id="overlay"></div>
     <div id="mainlayout">
         <div id="sidebar">
             <h2>New Releases</h2>
-            <a href="">Last 30 Days</a>
-            <a href="">This Week</a>
-            <a href="">Next Week</a>
+            <a href="#" id="last30">Last 30 Days</a>
+            <a href="#" id="thisWeek">This Week</a>
+            <a href="#" id="nextWeek">Next Week</a>
             <h2>Top</h2>
-            <a href="">Best of the year</a>
-            <a href="">Popular in 2025</a>
-            <a href="">All time top 250</a>
+            <a href="#" id="bestYear">Best of the year</a>
+            <a href="#" id="popular2025">Popular in 2025</a>
+            <a href="#" id="topAll">All time top 250</a>
             <h2><a href="">All Games</a></h2>
             <h2>Browse</h2>
             <h2>Platforms</h2>
@@ -46,24 +49,22 @@
                 <div class = "filter-buttons">
                     <label>Order By:</label>
                     <select id="order-by">
-                        <option>Date Added</option>
-                        <option>Name</option>
-                        <option>Release Date</option>
-                        <option>Popularity</option>
-                        <option>Average Rating</option>
+                    <option value="date_added">Date Added</option>
+                    <option value="name">Name</option>
+                    <option value="released">Release Date</option>
+                    <option value="-added">Popularity</option>
+                    <option value="-rating">Rating</option>
                     </select>
                 </div>
                 <div class = "filter-buttons">
                     <label>Platforms:</label>
                     <select id="platforms">
-                        <option>PC</option>
-                        <option>Playstation</option>
-                        <option>Xbox</option>
-                        <option>IOS</option>
-                        <option>Android</option>
-                        <option>Mac</option>
-                        <option>Linux</option>
-                        <option>Nintendo</option>
+                    <option value="">All</option>
+                    <option value="4">PC</option>
+                    <option value="187">Playstation</option>
+                    <option value="1">Xbox</option>
+                    <option value="3">IOS</option>
+                    <option value="21">Android</option>
                     </select>
                 </div>
             </div>
