@@ -23,20 +23,67 @@ let currentPage = 1;
 let search = "";
 let orderBy = "-added";
 let platform = "";
+let genre = "";
+let sortDirection = "desc";
 let totalgames = [];
 
 const games = document.getElementById("games");
 const input = document.getElementById("search");
 const orderSelect = document.getElementById("order-by");
-const platformSelect = document.getElementById("platforms");
+const sortDirBtn = document.getElementById("sort-direction");
+const themeToggleBtn = document.getElementById("theme-toggle");
+
+function getLikedGames() {
+  return JSON.parse(localStorage.getItem("likedGames") || "[]");
+}
+function getFavGames() {
+  return JSON.parse(localStorage.getItem("favGames") || "[]");
+}
+
+function toggleLike(id) {
+  let liked = getLikedGames();
+  if (liked.includes(id)) liked = liked.filter(g => g !== id);
+  else liked.push(id);
+  localStorage.setItem("likedGames", JSON.stringify(liked));
+  return liked.includes(id);
+}
+function toggleFav(id) {
+  let favs = getFavGames();
+  if (favs.includes(id)) favs = favs.filter(g => g !== id);
+  else favs.push(id);
+  localStorage.setItem("favGames", JSON.stringify(favs));
+  return favs.includes(id);
+}
+
+function applyTheme(theme) {
+  document.body.setAttribute("data-theme", theme);
+  const icon = themeToggleBtn.querySelector("i");
+  if (theme === "light") {
+    icon.classList.remove("fa-moon");
+    icon.classList.add("fa-sun");
+  } else {
+    icon.classList.remove("fa-sun");
+    icon.classList.add("fa-moon");
+  }
+  localStorage.setItem("theme", theme);
+}
+
+const savedTheme = localStorage.getItem("theme") || "dark";
+applyTheme(savedTheme);
+
+themeToggleBtn.addEventListener("click", () => {
+  const current = document.body.getAttribute("data-theme");
+  applyTheme(current === "dark" ? "light" : "dark");
+});
 
 let timeout;
 
 
 async function getGames(extra = "") {
-  const res = await fetch(
-    `http://localhost:3000/games?page=${currentPage}&search=${search}&platforms=${platform}${extra}`
-  );
+  let url = `http://localhost:3000/games?page=${currentPage}&search=${search}&platforms=${platform}`;
+  if (genre) url += `&genres=${genre}`;
+  url += extra;
+  const res = await fetch(url);
   const data = await res.json();
   return data.results;
 }
@@ -52,48 +99,67 @@ function applyFilters(data) {
       return false;
     }
 
+    if (genre && !game.genres?.some(g => g.id == genre)) {
+      return false;
+    }
+
     return true;
   });
 }
 
 function applySorting(data) {
   let sorted = [...data];
+  const dir = sortDirection === "asc" ? 1 : -1;
 
   if (orderBy === "-rating") {
-    return sorted.sort((a, b) => b.rating - a.rating);
-  }
-
-  if (orderBy === "-added") {
-    return sorted.sort((a, b) => b.added - a.added);
-  }
-
-  if (orderBy === "released") {
-    return sorted.sort((a, b) => new Date(b.released) - new Date(a.released));
-  }
-
-  if (orderBy === "name") {
-    return sorted.sort((a, b) => {
+    sorted.sort((a, b) => dir * (a.rating - b.rating));
+  } else if (orderBy === "-added") {
+    sorted.sort((a, b) => dir * (a.added - b.added));
+  } else if (orderBy === "released") {
+    sorted.sort((a, b) => dir * (new Date(a.released) - new Date(b.released)));
+  } else if (orderBy === "name") {
+    sorted.sort((a, b) => {
       let A = a.name.toLowerCase();
       let B = b.name.toLowerCase();
-      if (A < B) return -1;
-      if (A > B) return 1;
+      if (A < B) return -1 * dir;
+      if (A > B) return 1 * dir;
       return 0;
     });
+  } else if (orderBy === "date_added") {
+    sorted.sort((a, b) => dir * (new Date(a.updated) - new Date(b.updated)));
   }
 
   return sorted;
 }
 
 async function loadAndRender(reset = true, extra = "") {
+  const MIN_RESULTS = 12;
+  const MAX_PAGES = 5;
 
   if (reset) {
     games.innerHTML = "<h2>Loading...</h2>";
   }
 
-  const data = await getGames(extra);
+  let allFiltered = [];
+  let pagesLoaded = 0;
+  let noMoreData = false;
 
-  let filtered = applyFilters(data);
-  let sorted = applySorting(filtered);
+  while (allFiltered.length < MIN_RESULTS && pagesLoaded < MAX_PAGES) {
+    const data = await getGames(extra);
+    pagesLoaded++;
+
+    if (!data || data.length === 0) {
+      noMoreData = true;
+      break;
+    }
+
+    let filtered = applyFilters(data);
+    allFiltered.push(...filtered);
+
+    currentPage++;
+  }
+
+  let sorted = applySorting(allFiltered);
 
   if (reset) {
     totalgames = sorted;
@@ -101,6 +167,12 @@ async function loadAndRender(reset = true, extra = "") {
   } else {
     totalgames.push(...sorted);
     appendGames(sorted);
+  }
+
+  if (noMoreData) {
+    document.getElementById("loadMore").style.display = "none";
+  } else {
+    document.getElementById("loadMore").style.display = "";
   }
 }
 
@@ -121,6 +193,11 @@ function appendGames(list) {
 
 
 function createCard(values) {
+  const liked = getLikedGames();
+  const favs = getFavGames();
+  const isLiked = liked.includes(values.id);
+  const isFav = favs.includes(values.id);
+
   let card = document.createElement("div");
   card.classList.add("game-card");
 
@@ -141,7 +218,31 @@ function createCard(values) {
   platforms.innerText =
     values.platforms?.map(p => p.platform.name).slice(0, 3).join(", ") || "N/A";
 
-  card.append(img, title, rating, meta, platforms);
+  let actions = document.createElement("div");
+  actions.classList.add("card-actions");
+
+  let likeBtn = document.createElement("button");
+  likeBtn.classList.add("action-btn", "like-btn");
+  if (isLiked) likeBtn.classList.add("active");
+  likeBtn.innerHTML = `<i class="fa-solid fa-thumbs-up"></i> <span>Like</span>`;
+  likeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const nowLiked = toggleLike(values.id);
+    likeBtn.classList.toggle("active", nowLiked);
+  });
+
+  let favBtn = document.createElement("button");
+  favBtn.classList.add("action-btn", "fav-btn");
+  if (isFav) favBtn.classList.add("active");
+  favBtn.innerHTML = `<i class="fa-solid fa-heart"></i> <span>Favorite</span>`;
+  favBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const nowFav = toggleFav(values.id);
+    favBtn.classList.toggle("active", nowFav);
+  });
+
+  actions.append(likeBtn, favBtn);
+  card.append(img, title, rating, meta, platforms, actions);
   games.appendChild(card);
 }
 
@@ -163,14 +264,63 @@ orderSelect.addEventListener("change", (e) => {
   loadAndRender(true);
 });
 
-platformSelect.addEventListener("change", (e) => {
-  platform = e.target.value;
+document.querySelectorAll("[id^='platform-']").forEach(link => {
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    platform = link.id.split("-")[1];
+    genre = "";
+    currentPage = 1;
+
+    document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+    link.classList.add("active");
+
+    loadAndRender(true);
+  });
+});
+
+document.querySelectorAll("[id^='genre-']").forEach(link => {
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    genre = link.id.split("-")[1];
+    platform = "";
+    currentPage = 1;
+
+    document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+    link.classList.add("active");
+
+    loadAndRender(true);
+  });
+});
+
+document.getElementById("allGames").addEventListener("click", (e) => {
+  e.preventDefault();
+  platform = "";
+  genre = "";
+  search = "";
+  orderBy = "-added";
+  currentPage = 1;
+  document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+  loadAndRender(true);
+});
+
+sortDirBtn.addEventListener("click", () => {
+  sortDirection = sortDirection === "desc" ? "asc" : "desc";
+  const icon = sortDirBtn.querySelector("i");
+  const label = sortDirBtn.querySelector("span");
+  if (sortDirection === "asc") {
+    icon.classList.remove("fa-arrow-down-wide-short");
+    icon.classList.add("fa-arrow-up-wide-short");
+    label.textContent = "ASC";
+  } else {
+    icon.classList.remove("fa-arrow-up-wide-short");
+    icon.classList.add("fa-arrow-down-wide-short");
+    label.textContent = "DESC";
+  }
   currentPage = 1;
   loadAndRender(true);
 });
 
 document.getElementById("loadMore").addEventListener("click", () => {
-  currentPage++;
   loadAndRender(false);
 });
 
@@ -193,8 +343,14 @@ function formatDate(d) {
   return d.toISOString().split("T")[0];
 }
 
+function setActiveSidebarLink(el) {
+  document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+  el.classList.add("active");
+}
+
 document.getElementById("last30").onclick = (e) => {
   e.preventDefault();
+  setActiveSidebarLink(e.currentTarget);
   currentPage = 1;
 
   const today = new Date();
@@ -206,6 +362,7 @@ document.getElementById("last30").onclick = (e) => {
 
 document.getElementById("thisWeek").onclick = (e) => {
   e.preventDefault();
+  setActiveSidebarLink(e.currentTarget);
   currentPage = 1;
 
   const today = new Date();
@@ -217,6 +374,7 @@ document.getElementById("thisWeek").onclick = (e) => {
 
 document.getElementById("nextWeek").onclick = (e) => {
   e.preventDefault();
+  setActiveSidebarLink(e.currentTarget);
   currentPage = 1;
 
   const today = new Date();
@@ -228,6 +386,7 @@ document.getElementById("nextWeek").onclick = (e) => {
 
 document.getElementById("bestYear").onclick = (e) => {
   e.preventDefault();
+  setActiveSidebarLink(e.currentTarget);
   currentPage = 1;
 
   const year = new Date().getFullYear();
@@ -236,6 +395,7 @@ document.getElementById("bestYear").onclick = (e) => {
 
 document.getElementById("popular2025").onclick = (e) => {
   e.preventDefault();
+  setActiveSidebarLink(e.currentTarget);
   currentPage = 1;
 
   loadAndRender(true, `&dates=2025-01-01,2025-12-31`);
@@ -243,6 +403,7 @@ document.getElementById("popular2025").onclick = (e) => {
 
 document.getElementById("topAll").onclick = (e) => {
   e.preventDefault();
+  setActiveSidebarLink(e.currentTarget);
   currentPage = 1;
   orderBy = "-rating";
   loadAndRender(true);
