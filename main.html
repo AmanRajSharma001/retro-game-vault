@@ -1,72 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="index.css">
 
-  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap" rel="stylesheet">
 
-  <script src="https://kit.fontawesome.com/6f527b6b24.js" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/6f527b6b24.js" crossorigin="anonymous"></script>
 
-  <title>PixelArcade</title>
+    <title>PixelArcade</title>
 </head>
 
 <body>
     <audio id="background"></audio>
     <div id="header">
         <div class="left">
-            <a href="index.html" target = "_self">PixelArcade</a>
+            <a href="index.html" target="_self">PixelArcade</a>
             <a href="#" id="menu-toggle">
-            <i class="fa-solid fa-bars"></i>
+                <i class="fa-solid fa-bars"></i>
             </a>
             <a href="">Home</a>
             <a href="">Reviews</a>
         </div>
         <div class="right">
             <input id="search" type="text" placeholder="🔎 Search for games...">
+            <button id="theme-toggle" title="Toggle Theme">
+                <i class="fa-solid fa-moon"></i>
+            </button>
         </div>
     </div>
     <div id="overlay"></div>
     <div id="mainlayout">
         <div id="sidebar">
-            <h2>New Releases</h2>
-            <a href="#" id="last30">Last 30 Days</a>
-            <a href="#" id="thisWeek">This Week</a>
-            <a href="#" id="nextWeek">Next Week</a>
-            <h2>Top</h2>
-            <a href="#" id="bestYear">Best of the year</a>
-            <a href="#" id="popular2025">Popular in 2025</a>
-            <a href="#" id="topAll">All time top 250</a>
-            <h2><a href="">All Games</a></h2>
-            <h2>Browse</h2>
-            <h2>Platforms</h2>
-            <h2>Genres</h2>
+            <h2 class="nav-heading">New Releases</h2>
+                <a href="#" id="last30" class="nav-link"><i class="fa-solid fa-fire"></i> Last 30 Days</a>
+                <a href="#" id="thisWeek" class="nav-link"><i class="fa-solid fa-forward"></i> This Week</a>
+                <a href="#" id="nextWeek" class="nav-link"><i class="fa-solid fa-forward-fast"></i> Next Week</a>
+            <h2 class="nav-heading">Top</h2>
+                <a href="#" id="bestYear" class="nav-link"><i class="fa-solid fa-trophy"></i> Best of the year</a>
+                <a href="#" id="popular2025" class="nav-link"><i class="fa-solid fa-chart-line"></i> Popular in 2025</a>
+                <a href="#" id="topAll" class="nav-link"><i class="fa-solid fa-crown"></i> All time top 250</a>
+            <h2 class="nav-heading"><a href="#" id="allGames">All Games</a></h2>
+            <h2 class="nav-heading">Platforms</h2>
+                <a href="#" class="nav-link" id="platform-4"><i class="fa-solid fa-desktop"></i> PC</a>
+                <a href="#" class="nav-link" id="platform-187"><i class="fa-brands fa-playstation"></i> PlayStation 4</a>
+                <a href="#" class="nav-link" id="platform-1"><i class="fa-brands fa-xbox"></i> Xbox One</a>
+                <a href="#" class="nav-link" id="platform-3"><i class="fa-brands fa-apple"></i> iOS</a>
+                <a href="#" class="nav-link" id="platform-21"><i class="fa-brands fa-android"></i> Android</a>
+            <h2 class="nav-heading">Genres</h2>
+            <a href="#" class="nav-link" id="genre-4"><i class="fa-solid fa-crosshairs"></i> Action</a>
+            <a href="#" class="nav-link" id="genre-10"><i class="fa-solid fa-chess"></i> Strategy</a>
+            <a href="#" class="nav-link" id="genre-5"><i class="fa-solid fa-hat-wizard"></i> RPG</a>
+            <a href="#" class="nav-link" id="genre-2"><i class="fa-solid fa-gun"></i> Shooter</a>
+            <a href="#" class="nav-link" id="genre-3"><i class="fa-solid fa-compass"></i> Adventure</a>
+            <a href="#" class="nav-link" id="genre-7"><i class="fa-solid fa-puzzle-piece"></i> Puzzle</a>
+            <a href="#" class="nav-link" id="genre-1"><i class="fa-solid fa-flag-checkered"></i> Racing</a>
+            <a href="#" class="nav-link" id="genre-15"><i class="fa-solid fa-futbol"></i> Sports</a>
         </div>
         <div id="content">
             <div id="filter">
-                <div class = "filter-buttons">
+                <div class="filter-buttons">
                     <label>Order By:</label>
                     <select id="order-by">
-                    <option value="date_added">Date Added</option>
-                    <option value="name">Name</option>
-                    <option value="released">Release Date</option>
-                    <option value="-added">Popularity</option>
-                    <option value="-rating">Rating</option>
+                        <option value="date_added">Date Added</option>
+                        <option value="name">Name</option>
+                        <option value="released">Release Date</option>
+                        <option value="-added">Popularity</option>
+                        <option value="-rating">Rating</option>
                     </select>
                 </div>
-                <div class = "filter-buttons">
-                    <label>Platforms:</label>
-                    <select id="platforms">
-                    <option value="">All</option>
-                    <option value="4">PC</option>
-                    <option value="187">Playstation</option>
-                    <option value="1">Xbox</option>
-                    <option value="3">IOS</option>
-                    <option value="21">Android</option>
-                    </select>
+                <div class="filter-buttons">
+                    <label>Sort:</label>
+                    <button id="sort-direction" title="Toggle sort direction">
+                        <i class="fa-solid fa-arrow-down-wide-short"></i>
+                        <span>DESC</span>
+                    </button>
                 </div>
+
             </div>
             <div id="games"></div>
             <div class="load-more">
@@ -76,4 +89,5 @@
     </div>
     <script src="main.js"></script>
 </body>
+
 </html>
