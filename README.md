@@ -5,8 +5,8 @@
 2. DO run the index.html on **brave or chrome**
 
 ## 🔗 Deployed Link
-1. (MainPage)[https://retro-game-vault-roan.vercel.app/main.html]  (Mobile)
-2. (IntroPage)[https://retro-game-vault-roan.vercel.app/index.html] (Desktop) (Press enter to load main page,Touch to load feature soon :'))
+- 🎮 [MainPage](https://retro-game-vault-roan.vercel.app/main.html)  (Mobile)
+- 🚀 [IntroPage](https://retro-game-vault-roan.vercel.app/index.html) (Desktop) (Press enter to load main page,Touch to load feature soon :'))
 
 ## 📌 Project Overview
 
