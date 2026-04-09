@@ -30,6 +30,33 @@
             <button id="theme-toggle" title="Toggle Theme">
                 <i class="fa-solid fa-moon"></i>
             </button>
+            <div id="profile-menu">
+                <button id="profile-btn" title="Profile">
+                    <i class="fa-solid fa-user"></i>
+                </button>
+                <div id="profile-dropdown">
+                    <div class="profile-header">
+                        <div class="profile-avatar-lg"><i class="fa-solid fa-user"></i></div>
+                        <div class="profile-info">
+                            <span class="profile-name">Player One</span>
+                            <span class="profile-tag">@pixelarcade</span>
+                        </div>
+                    </div>
+                    <div class="profile-divider"></div>
+                    <a href="#" class="profile-item" id="dropdown-liked">
+                        <i class="fa-solid fa-thumbs-up"></i> Liked Games
+                        <span class="profile-badge" id="liked-count">0</span>
+                    </a>
+                    <a href="#" class="profile-item" id="dropdown-favorites">
+                        <i class="fa-solid fa-heart"></i> Favorites
+                        <span class="profile-badge" id="fav-count">0</span>
+                    </a>
+                    <div class="profile-divider"></div>
+                    <a href="#" class="profile-item profile-item-danger" id="dropdown-clear">
+                        <i class="fa-solid fa-trash"></i> Clear All Data
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
     <div id="overlay"></div>
@@ -43,7 +70,9 @@
                 <a href="#" id="bestYear" class="nav-link"><i class="fa-solid fa-trophy"></i> Best of the year</a>
                 <a href="#" id="popular2025" class="nav-link"><i class="fa-solid fa-chart-line"></i> Popular in 2025</a>
                 <a href="#" id="topAll" class="nav-link"><i class="fa-solid fa-crown"></i> All time top 250</a>
-            <h2 class="nav-heading"><a href="#" id="allGames">All Games</a></h2>
+            <h2 class="nav-heading">Profile</h2>
+                <a href="#" class="nav-link" id="my-liked"><i class="fa-solid fa-thumbs-up"></i> Liked Games</a>
+                <a href="#" class="nav-link" id="my-favorites"><i class="fa-solid fa-heart"></i> Favorites</a>
             <h2 class="nav-heading">Platforms</h2>
                 <a href="#" class="nav-link" id="platform-4"><i class="fa-solid fa-desktop"></i> PC</a>
                 <a href="#" class="nav-link" id="platform-187"><i class="fa-brands fa-playstation"></i> PlayStation 4</a>

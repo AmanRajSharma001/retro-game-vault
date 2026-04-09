@@ -25,6 +25,9 @@ let orderBy = "-added";
 let platform = "";
 let genre = "";
 let sortDirection = "desc";
+let currentExtra = "";
+let profileMode = false;
+let profileType = "";
 let totalgames = [];
 
 const games = document.getElementById("games");
@@ -39,19 +42,39 @@ function getLikedGames() {
 function getFavGames() {
   return JSON.parse(localStorage.getItem("favGames") || "[]");
 }
+function getLikedGameObjects() {
+  return JSON.parse(localStorage.getItem("likedGameObjects") || "[]");
+}
+function getFavGameObjects() {
+  return JSON.parse(localStorage.getItem("favGameObjects") || "[]");
+}
 
-function toggleLike(id) {
+function toggleLike(id, gameObj) {
   let liked = getLikedGames();
-  if (liked.includes(id)) liked = liked.filter(g => g !== id);
-  else liked.push(id);
+  let likedObjs = getLikedGameObjects();
+  if (liked.includes(id)) {
+    liked = liked.filter(g => g !== id);
+    likedObjs = likedObjs.filter(g => g.id !== id);
+  } else {
+    liked.push(id);
+    likedObjs.push(gameObj);
+  }
   localStorage.setItem("likedGames", JSON.stringify(liked));
+  localStorage.setItem("likedGameObjects", JSON.stringify(likedObjs));
   return liked.includes(id);
 }
-function toggleFav(id) {
+function toggleFav(id, gameObj) {
   let favs = getFavGames();
-  if (favs.includes(id)) favs = favs.filter(g => g !== id);
-  else favs.push(id);
+  let favObjs = getFavGameObjects();
+  if (favs.includes(id)) {
+    favs = favs.filter(g => g !== id);
+    favObjs = favObjs.filter(g => g.id !== id);
+  } else {
+    favs.push(id);
+    favObjs.push(gameObj);
+  }
   localStorage.setItem("favGames", JSON.stringify(favs));
+  localStorage.setItem("favGameObjects", JSON.stringify(favObjs));
   return favs.includes(id);
 }
 
@@ -132,9 +155,10 @@ function applySorting(data) {
   return sorted;
 }
 
-async function loadAndRender(reset = true, extra = "") {
-  const MIN_RESULTS = 12;
-  const MAX_PAGES = 5;
+async function loadAndRender(reset = true, extra = currentExtra) {
+  currentExtra = extra;
+  const MIN_RESULTS = 20;
+  const MAX_PAGES = 10;
 
   if (reset) {
     games.innerHTML = "<h2>Loading...</h2>";
@@ -227,8 +251,12 @@ function createCard(values) {
   likeBtn.innerHTML = `<i class="fa-solid fa-thumbs-up"></i> <span>Like</span>`;
   likeBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    const nowLiked = toggleLike(values.id);
+    const nowLiked = toggleLike(values.id, values);
     likeBtn.classList.toggle("active", nowLiked);
+    if (profileMode && profileType === "liked") {
+      card.remove();
+      if (games.children.length === 0) games.innerHTML = "<h1>No Games Found 💀</h1>";
+    }
   });
 
   let favBtn = document.createElement("button");
@@ -237,8 +265,12 @@ function createCard(values) {
   favBtn.innerHTML = `<i class="fa-solid fa-heart"></i> <span>Favorite</span>`;
   favBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    const nowFav = toggleFav(values.id);
+    const nowFav = toggleFav(values.id, values);
     favBtn.classList.toggle("active", nowFav);
+    if (profileMode && profileType === "favorites") {
+      card.remove();
+      if (games.children.length === 0) games.innerHTML = "<h1>No Games Found 💀</h1>";
+    }
   });
 
   actions.append(likeBtn, favBtn);
@@ -260,47 +292,80 @@ input.addEventListener("input", (e) => {
 
 orderSelect.addEventListener("change", (e) => {
   orderBy = e.target.value;
+  if (profileMode) {
+    let sorted = applySorting(totalgames);
+    totalgames = sorted;
+    resetGames(totalgames);
+    return;
+  }
   currentPage = 1;
-  loadAndRender(true);
+  loadAndRender(true, currentExtra);
 });
 
 document.querySelectorAll("[id^='platform-']").forEach(link => {
   link.addEventListener("click", (e) => {
     e.preventDefault();
+    profileMode = false;
+    profileType = "";
     platform = link.id.split("-")[1];
     genre = "";
+    currentExtra = "";
     currentPage = 1;
 
     document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
     link.classList.add("active");
 
-    loadAndRender(true);
+    loadAndRender(true, "");
   });
 });
 
 document.querySelectorAll("[id^='genre-']").forEach(link => {
   link.addEventListener("click", (e) => {
     e.preventDefault();
+    profileMode = false;
+    profileType = "";
     genre = link.id.split("-")[1];
     platform = "";
+    currentExtra = "";
     currentPage = 1;
 
     document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
     link.classList.add("active");
 
-    loadAndRender(true);
+    loadAndRender(true, "");
   });
 });
 
-document.getElementById("allGames").addEventListener("click", (e) => {
+function renderProfileGames(type) {
+  profileMode = true;
+  profileType = type;
+  let gameObjects = type === "liked" ? getLikedGameObjects() : getFavGameObjects();
+
+  if (gameObjects.length === 0) {
+    totalgames = [];
+    games.innerHTML = "<h1>No Games Found 💀</h1>";
+    document.getElementById("loadMore").style.display = "none";
+    return;
+  }
+
+  let sorted = applySorting(gameObjects);
+  totalgames = sorted;
+  resetGames(totalgames);
+  document.getElementById("loadMore").style.display = "none";
+}
+
+document.getElementById("my-liked").addEventListener("click", (e) => {
   e.preventDefault();
-  platform = "";
-  genre = "";
-  search = "";
-  orderBy = "-added";
-  currentPage = 1;
   document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
-  loadAndRender(true);
+  e.currentTarget.classList.add("active");
+  renderProfileGames("liked");
+});
+
+document.getElementById("my-favorites").addEventListener("click", (e) => {
+  e.preventDefault();
+  document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+  e.currentTarget.classList.add("active");
+  renderProfileGames("favorites");
 });
 
 sortDirBtn.addEventListener("click", () => {
@@ -316,8 +381,14 @@ sortDirBtn.addEventListener("click", () => {
     icon.classList.add("fa-arrow-down-wide-short");
     label.textContent = "DESC";
   }
+  if (profileMode) {
+    let sorted = applySorting(totalgames);
+    totalgames = sorted;
+    resetGames(totalgames);
+    return;
+  }
   currentPage = 1;
-  loadAndRender(true);
+  loadAndRender(true, currentExtra);
 });
 
 document.getElementById("loadMore").addEventListener("click", () => {
@@ -339,6 +410,62 @@ overlay.addEventListener("click", () => {
   overlay.classList.remove("active");
 });
 
+function updateProfileBadges() {
+  document.getElementById("liked-count").textContent = getLikedGames().length;
+  document.getElementById("fav-count").textContent = getFavGames().length;
+}
+
+updateProfileBadges();
+
+const profileBtn = document.getElementById("profile-btn");
+const profileDropdown = document.getElementById("profile-dropdown");
+
+profileBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  updateProfileBadges();
+  profileDropdown.classList.toggle("open");
+});
+
+document.addEventListener("click", (e) => {
+  if (!document.getElementById("profile-menu").contains(e.target)) {
+    profileDropdown.classList.remove("open");
+  }
+});
+
+document.getElementById("dropdown-liked").addEventListener("click", (e) => {
+  e.preventDefault();
+  profileDropdown.classList.remove("open");
+  document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+  document.getElementById("my-liked").classList.add("active");
+  renderProfileGames("liked");
+});
+
+document.getElementById("dropdown-favorites").addEventListener("click", (e) => {
+  e.preventDefault();
+  profileDropdown.classList.remove("open");
+  document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+  document.getElementById("my-favorites").classList.add("active");
+  renderProfileGames("favorites");
+});
+
+document.getElementById("dropdown-clear").addEventListener("click", (e) => {
+  e.preventDefault();
+  if (confirm("Clear all liked and favorite games?")) {
+    localStorage.removeItem("likedGames");
+    localStorage.removeItem("likedGameObjects");
+    localStorage.removeItem("favGames");
+    localStorage.removeItem("favGameObjects");
+    updateProfileBadges();
+    profileDropdown.classList.remove("open");
+    document.querySelectorAll(".like-btn.active").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".fav-btn.active").forEach(b => b.classList.remove("active"));
+    if (profileMode) {
+      totalgames = [];
+      games.innerHTML = "<h1>No Games Found 💀</h1>";
+    }
+  }
+});
+
 function formatDate(d) {
   return d.toISOString().split("T")[0];
 }
@@ -350,6 +477,8 @@ function setActiveSidebarLink(el) {
 
 document.getElementById("last30").onclick = (e) => {
   e.preventDefault();
+  profileMode = false;
+  profileType = "";
   setActiveSidebarLink(e.currentTarget);
   currentPage = 1;
 
@@ -362,6 +491,8 @@ document.getElementById("last30").onclick = (e) => {
 
 document.getElementById("thisWeek").onclick = (e) => {
   e.preventDefault();
+  profileMode = false;
+  profileType = "";
   setActiveSidebarLink(e.currentTarget);
   currentPage = 1;
 
@@ -374,6 +505,8 @@ document.getElementById("thisWeek").onclick = (e) => {
 
 document.getElementById("nextWeek").onclick = (e) => {
   e.preventDefault();
+  profileMode = false;
+  profileType = "";
   setActiveSidebarLink(e.currentTarget);
   currentPage = 1;
 
@@ -386,6 +519,8 @@ document.getElementById("nextWeek").onclick = (e) => {
 
 document.getElementById("bestYear").onclick = (e) => {
   e.preventDefault();
+  profileMode = false;
+  profileType = "";
   setActiveSidebarLink(e.currentTarget);
   currentPage = 1;
 
@@ -395,6 +530,8 @@ document.getElementById("bestYear").onclick = (e) => {
 
 document.getElementById("popular2025").onclick = (e) => {
   e.preventDefault();
+  profileMode = false;
+  profileType = "";
   setActiveSidebarLink(e.currentTarget);
   currentPage = 1;
 
@@ -403,6 +540,8 @@ document.getElementById("popular2025").onclick = (e) => {
 
 document.getElementById("topAll").onclick = (e) => {
   e.preventDefault();
+  profileMode = false;
+  profileType = "";
   setActiveSidebarLink(e.currentTarget);
   currentPage = 1;
   orderBy = "-rating";
