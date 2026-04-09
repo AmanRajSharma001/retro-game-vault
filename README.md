@@ -3,7 +3,7 @@
 ## ⚠️ Note
 1. Do complete the **⚙️ Setup Ideation** before running index.html
 2. DO run the index.html on **brave or chrome**
-3. There might be cases whree filter will show only (Loading...) -> because the API key used loads game **page wise** try to click on load more if that game contains filter condition it will pop up by itself.
+3. There might be cases where filter will show only (Loading...) -> because the API key used loads game **page wise** try to click on **load more** if that game contains filter condition it will pop up by itself.
 
 ## 🔗 Deployed Link
 - 🎮 [MainPage](https://retro-game-vault-cyan.vercel.app/main.html)  (Mobile)
