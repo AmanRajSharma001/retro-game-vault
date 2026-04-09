@@ -103,7 +103,7 @@ let timeout;
 
 
 async function getGames(extra = "") {
-  let url = `http://localhost:3000/games?page=${currentPage}&search=${search}&platforms=${platform}`;
+  let url = `https://retro-game-vault.onrender.com/games?page=${currentPage}&search=${search}&platforms=${platform}`;
   if (genre) url += `&genres=${genre}`;
   url += extra;
   const res = await fetch(url);
